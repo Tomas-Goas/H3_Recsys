@@ -16,6 +16,7 @@ El objetivo principal es comparar distintas arquitecturas **con y sin dwell**, a
 ## Estructura del repositorio
 
 ```
+├── Data/                   # Analisis del Dataset
 ├── GRU4Rec/                # Código + modelos finales entrenados
 ├── NARM/                   # Código + modelos finales entrenados
 ├── SASRec/                 # Código + modelos finales entrenados
