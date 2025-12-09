@@ -87,6 +87,7 @@ Para **reproducir los experimentos de cada arquitectura**:
 4. **Notas**
    - Todos los modelos están organizados en carpetas separadas.
    - Los scripts son autónomos por carpeta: no es necesario moverse fuera del directorio del modelo para ejecutar los experimentos.
+   - En el path "Resultados antiguos/Gru/GRU4Rec_Oct_colab.ipynb", está donde se crean las versiones reducidas de los datasets.
    - Ante dudas sobre la ejecución específica para un modelo, consulta el README adicional o script de ayuda de esa carpeta/modelo.
 
 ---
