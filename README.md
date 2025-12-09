@@ -4,53 +4,96 @@
 
 ---
 
-## Resumen del estudio
+## Descripción general
 
-Este repositorio contiene los experimentos, modelos y código utilizados para analizar el **impacto del dwell time** en el rendimiento de distintos algoritmos de **recomendación secuencial**.
+Este repositorio contiene el código, experimentos y modelos utilizados para evaluar el **impacto del dwell time** en sistemas de **recomendación secuencial**.  
+El dwell time se incorpora repitiendo cada ítem un número de veces proporcional al tiempo que el usuario lo visualiza, convirtiendo una señal implícita en una señal explícita dentro de la secuencia.
 
-El *dwell time* se incorpora repitiendo un ítem dentro de la secuencia un número de veces proporcional al tiempo que el usuario lo visualiza. Esto convierte el interés del usuario en una señal explícita dentro del modelo, pero al mismo tiempo **alarga artificialmente las sesiones**, lo que incrementa los tiempos de entrenamiento y modifica la distribución de secuencias.
-
-El estudio compara modelos **con** y **sin** dwell, evaluando cómo la arquitectura influye en su capacidad para aprovechar esta señal.
-
----
-
-## 📊 Modelos evaluados
-
-### **GRU4Rec**
-Modelo recurrente basado en GRUs que captura dependencias de corto plazo a través de un estado oculto.  
-El dwell actúa como una forma natural de refuerzo dentro de la dinámica recurrente.
-
-### **BERT4Rec**
-Transformer bidireccional entrenado mediante *masked item prediction*.  
-La repetición producida por dwell introduce ruido contextual y degrada el rendimiento en forma consistente.
-
-### **SASRec**
-Modelo Transformer **causal/unidireccional**.  
-Aprovecha la atención como BERT, pero sin romper la direccionalidad. El dwell se incorpora como una señal temporal válida.
-
-### **NARM (Neural Attentive Session Model)**
-Modelo híbrido que combina GRU + atención sobre el contexto.  
-Es el que **más se beneficia** del dwell: la atención amplifica señales repetidas interpretándolas como evidencia explícita de interés.
+El objetivo principal es comparar distintas arquitecturas **con y sin dwell**, analizando cómo cada una responde a esta modificación estructural en las sesiones.
 
 ---
 
-## 📈 Principales resultados
+## Estructura del repositorio
 
-- El dwell time **no es universalmente beneficioso**: depende fuertemente de la arquitectura.  
-- Modelos **causales** (GRU4Rec, SASRec, NARM) mejoran significativamente.  
-- Modelos **bidireccionales** (BERT4Rec) se degradan por ruido contextual.  
-- **NARM** presenta las mejoras más grandes entre todos los modelos.  
-- El dwell genera **sesiones más largas**, mayor costo computacional y diferencias en tiempos de entrenamiento.  
-  - En noviembre, curiosamente, el entrenamiento **sin dwell fue ~20% más lento**, posiblemente por mayor variabilidad en longitudes, batching menos eficiente o mayor dispersión en las sesiones.
+```
+├── GRU4Rec/                # Código + modelos finales entrenados
+├── NARM/                   # Código + modelos finales entrenados
+├── SASRec/                 # Código + modelos finales entrenados
+├── BERT4Rec/               # Código + modelos finales entrenados
+├── NextItNet/              # Código + modelos finales entrenados
+├── Resultados antiguos/    # Experimentos previos (opcional)
+└── README.md               # Este archivo
+```
+
+**En cada carpeta con el nombre del modelo encontrarás los modelos finales ya entrenados** (estructurados para poder correrlos nuevamente), junto con los scripts de entrenamiento correspondientes.
 
 ---
 
-## ⚙️ Datasets
+## Modelos evaluados
 
-Los experimentos usan datasets públicos del proyecto **Open CDP (Rees46 Technologies)**, correspondientes a:
+- **GRU4Rec:** RNN basada en GRUs, captura dependencias de corto plazo.  
+- **NARM:** GRU con un mecanismo de atención global; arquitectura especialmente sensible al refuerzo introducido por dwell.  
+- **SASRec:** Modelo *self-attention* unidireccional (causal).  
+- **BERT4Rec:** Transformer bidireccional entrenado con *masked item prediction*.  
+- **NextItNet:** Arquitectura convolucional profunda basada en convoluciones dilatadas.
 
-- Octubre 2019  
-- Noviembre 2019  
+Cada modelo fue evaluado en dos variantes:  
+**(1) sesiones originales** y **(2) sesiones extendidas mediante dwell time**.
 
-Cada registro representa un evento asociado a un producto en un e-commerce multicategoría (views, cart, purchase).
+---
 
+## Resultados generales
+
+- El efecto del dwell time depende fuertemente de la arquitectura.  
+- Modelos **causales** como GRU4Rec, NARM y SASRec muestran mejoras significativas.  
+- Modelos **bidireccionales** (BERT4Rec) ven degradado su rendimiento debido al ruido contextual introducido por la repetición.  
+- **NARM** obtiene las mayores ganancias al utilizar dwell.  
+- El dwell aumenta la longitud de las sesiones y, con ello, los tiempos de entrenamiento.  
+- En pruebas sobre el dataset de noviembre, el entrenamiento **sin dwell** resultó ~20% más lento, probablemente asociado a mayor variabilidad de longitudes y menos eficiencia en batching.
+
+---
+
+## Datasets
+
+Los experimentos utilizan datos públicos del proyecto **Open CDP (Rees46 Technologies)**:
+
+- **Octubre 2019**  
+- **Noviembre 2019**
+
+Los eventos incluyen: *product views*, *cart additions* y *purchases*, junto con el tiempo exacto del evento, necesario para calcular dwell time.
+
+---
+
+## Reproducibilidad
+
+Para **reproducir los experimentos de cada arquitectura**:
+
+1. **Requisitos previos**  
+   - Python 3.7+  
+   - Instalar las dependencias indicadas en cada carpeta de modelo (es para casi todos lo mismo, porque siguen el mismo pipeline).
+
+2. **Ejecuta los scripts desde la carpeta del modelo**  
+   - Cada carpeta (`GRU4Rec/`, `NARM/`, `SASRec/`, `BERT4Rec/`, `NextItNet/`) contiene:
+     - Scripts de entrenamiento y evaluación.
+     - Modelos finales ya entrenados (listos para ser evaluados nuevamente).
+
+   - Repita el proceso análogo en cada carpeta de modelo.
+
+3. **Entrenamiento y evaluación**
+   - Puedes entrenar desde cero usando los scripts de cada modelo, o evaluar directamente los modelos pre-entrenados.
+   - Para evaluar variantes **con** o **sin** dwell time, selecciona el dataset o configuración correspondiente.
+   - Para probar partes mas pequeñas del dataset que tomen menos tiempo, esta comentado "df_small" para usarlo.
+
+4. **Notas**
+   - Todos los modelos están organizados en carpetas separadas.
+   - Los scripts son autónomos por carpeta: no es necesario moverse fuera del directorio del modelo para ejecutar los experimentos.
+   - Ante dudas sobre la ejecución específica para un modelo, consulta el README adicional o script de ayuda de esa carpeta/modelo.
+
+---
+
+## Contacto y Créditos
+
+- Tomás Goas - [tgoas@uc.cl](mailto:tgoas@uc.cl)
+- Leopoldo Farr - [lfarr@uc.cl](mailto:lfarr@uc.cl)
+
+---
